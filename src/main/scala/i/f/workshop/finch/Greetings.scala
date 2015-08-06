@@ -28,6 +28,5 @@ object Greetings extends App {
 
   val server: ListeningServer =
     Httpx.server.serve(":8081", (hi :+: hello :+: salute).toService)
-
   Await.ready(server)
 }

@@ -17,6 +17,5 @@ object HelloWorld extends App {
   }
 
   val server: ListeningServer = Httpx.server.serve(":8081", service)
-
   Await.ready(server)
 }
