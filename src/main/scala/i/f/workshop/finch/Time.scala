@@ -1,6 +1,6 @@
 package i.f.workshop.finch
 
-import com.twitter.finagle.{ListeningServer, Httpx}
+import com.twitter.finagle.Httpx
 import com.twitter.util.Await
 
 import io.finch.route._
@@ -18,6 +18,5 @@ object Time extends App {
       currentTime(new java.util.Locale(l.language, l.country))
     }
 
-  val server: ListeningServer = Httpx.server.serve(":8081", time.toService)
-  Await.ready(server)
+  Await.ready(Httpx.server.serve(":8081", time.toService))
 }
