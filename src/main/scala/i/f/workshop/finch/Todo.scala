@@ -23,7 +23,6 @@ object Todo extends TwitterServer {
   val port: Flag[Int] = flag("port", 8081, "TCP port for HTTP server")
 
   case class Todo(id: String, title: String, completed: Boolean, order: Int)
-  case class PatchedTodo(title: Option[String], completed: Option[Boolean], order: Option[Int])
 
   object Todo {
     private[this] val db: mutable.Map[String, Todo] = mutable.Map.empty[String, Todo]
@@ -58,18 +57,14 @@ object Todo extends TwitterServer {
     }
   }
 
-  val patchedTodo: RequestReader[PatchedTodo] = body.as[PatchedTodo]
+  val patchedTodo: RequestReader[Todo => Todo] = body.as[Todo => Todo]
 
   val patchTodo: Router[Todo] =
-    patch("todos" / string ? patchedTodo) { (id: String, pt: PatchedTodo) =>
+    patch("todos" / string ? patchedTodo) { (id: String, pt: Todo => Todo) =>
       Todo.get(id) match {
         case Some(currentTodo) =>
-          val newTodo: Todo =
-            Todo(id,
-              pt.title.getOrElse(currentTodo.title),
-              pt.completed.getOrElse(currentTodo.completed),
-              pt.order.getOrElse(currentTodo.order)
-            )
+          val newTodo: Todo = pt(currentTodo)
+          Todo.delete(id)
           Todo.save(newTodo)
 
           newTodo
