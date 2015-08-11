@@ -57,6 +57,13 @@ object Todo extends TwitterServer {
     }
   }
 
+  val deleteTodos: Router[List[Todo]] = delete("todos") {
+    val all: List[Todo] = Todo.list()
+    all.foreach(t => Todo.delete(t.id))
+
+    all
+  }
+
   val patchedTodo: RequestReader[Todo => Todo] = body.as[Todo => Todo]
 
   val patchTodo: Router[Todo] =
@@ -81,7 +88,7 @@ object Todo extends TwitterServer {
   }
 
   val api: Service[Request, Response] = handleExceptions andThen (
-    getTodos :+: postTodo :+: deleteTodo :+: patchTodo
+    getTodos :+: postTodo :+: deleteTodo :+: deleteTodos :+: patchTodo
   ).toService
 
   def main(): Unit = {
