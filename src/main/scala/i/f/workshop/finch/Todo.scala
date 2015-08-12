@@ -45,6 +45,8 @@ object Todo extends TwitterServer {
   val postTodo: Router[Todo] = post("todos" ? postedTodo) { t: Todo =>
     todos.incr()
     Todo.save(t)
+
+    t
   }
 
   case class TodoNotFound(id: String) extends Exception(s"Todo($id) not found.")
