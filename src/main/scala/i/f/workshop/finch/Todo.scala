@@ -20,4 +20,15 @@ import io.circe.generic.auto._
 
 object Todo extends App {
 
+  case class Todo(id: String, title: String, completed: Boolean, order: Int)
+
+  object Todo {
+    private[this] val db: mutable.Map[String, Todo] = mutable.Map.empty[String, Todo]
+
+    def get(id: String): Option[Todo] = synchronized { db.get(id) }
+    def list(): List[Todo] = synchronized { db.values.toList }
+    def save(t: Todo): Unit = synchronized { db += (t.id -> t) }
+    def delete(id: String): Unit = synchronized { db -= id }
+  }
+
 }
