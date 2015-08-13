@@ -4,6 +4,8 @@ scalaVersion := "2.11.7"
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
+resolvers += "TM" at "http://maven.twttr.com"
+
 libraryDependencies ++= Seq(
   "com.github.finagle" %% "finch-core" % "0.9.0-SNAPSHOT",
   "com.github.finagle" %% "finch-circe" % "0.9.0-SNAPSHOT",
