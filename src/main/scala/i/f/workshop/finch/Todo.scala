@@ -12,9 +12,8 @@ import com.twitter.finagle.httpx.{Request, Response}
 import com.twitter.server.TwitterServer
 import com.twitter.util.{Future, Await}
 
+import io.finch._
 import io.finch.request._
-import io.finch.response._
-import io.finch.route._
 import io.finch.circe._
 import io.circe.generic.auto._
 
@@ -38,35 +37,35 @@ object Todo extends TwitterServer {
   val postedTodo: RequestReader[Todo] =
     body.as[String => Todo].map(_(UUID.randomUUID().toString))
 
-  val getTodos: Router[List[Todo]] = get("todos") {
-    Todo.list()
+  val getTodos: Endpoint[List[Todo]] = get("todos") {
+    Ok(Todo.list())
   }
 
-  val postTodo: Router[Todo] = post("todos" ? postedTodo) { t: Todo =>
+  val postTodo: Endpoint[Todo] = post("todos" ? postedTodo) { t: Todo =>
     todos.incr()
     Todo.save(t)
 
-    t
+    Created(t)
   }
 
   case class TodoNotFound(id: String) extends Exception(s"Todo($id) not found.")
-  val deleteTodo: Router[Todo] = delete("todos" / string) { id: String =>
+  val deleteTodo: Endpoint[Todo] = delete("todos" / string) { id: String =>
     Todo.get(id) match {
-      case Some(t) => Todo.delete(id); t
+      case Some(t) => Todo.delete(id); Ok(t)
       case None => throw new TodoNotFound(id)
     }
   }
 
-  val deleteTodos: Router[List[Todo]] = delete("todos") {
+  val deleteTodos: Endpoint[List[Todo]] = delete("todos") {
     val all: List[Todo] = Todo.list()
     all.foreach(t => Todo.delete(t.id))
 
-    all
+    Ok(all)
   }
 
   val patchedTodo: RequestReader[Todo => Todo] = body.as[Todo => Todo]
 
-  val patchTodo: Router[Todo] =
+  val patchTodo: Endpoint[Todo] =
     patch("todos" / string ? patchedTodo) { (id: String, pt: Todo => Todo) =>
       Todo.get(id) match {
         case Some(currentTodo) =>
@@ -74,7 +73,7 @@ object Todo extends TwitterServer {
           Todo.delete(id)
           Todo.save(newTodo)
 
-          newTodo
+          Ok(newTodo)
         case None => throw TodoNotFound(id)
       }
     }
@@ -82,7 +81,7 @@ object Todo extends TwitterServer {
   val handleExceptions: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
     def apply(req: Request, service: Service[Request, Response]): Future[Response] =
       service(req).handle {
-        case TodoNotFound(id) => NotFound(Map("id" -> id))
+        case TodoNotFound(id) => io.finch.response.NotFound(Map("id" -> id))
       }
   }
 

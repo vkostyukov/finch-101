@@ -3,9 +3,9 @@ package i.f.workshop.finch
 import com.twitter.finagle.Httpx
 import com.twitter.util.Await
 
-import io.finch.route._
+import io.finch._
 
 object HelloWorld extends App {
-  val hello: Router[String] = Router.value("Hello, World!")
+  val hello: Endpoint[String] = Endpoint(Ok("Hello, World!"))
   Await.ready(Httpx.server.serve(":8081", hello.toService))
 }
