@@ -18,7 +18,6 @@ initialCommands in console :=
   """
     |import io.finch._
     |import io.finch.request._
-    |import io.finch.response._
     |import io.finch.circe._
     |import io.circe.generic.auto._
     |import com.twitter.finagle.Httpx

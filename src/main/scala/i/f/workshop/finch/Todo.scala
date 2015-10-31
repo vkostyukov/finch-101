@@ -21,21 +21,21 @@ object Todo extends TwitterServer {
 
   val port: Flag[Int] = flag("port", 8081, "TCP port for HTTP server")
 
-  case class Todo(id: String, title: String, completed: Boolean, order: Int)
+  case class Todo(id: UUID, title: String, completed: Boolean, order: Int)
 
   object Todo {
-    private[this] val db: mutable.Map[String, Todo] = mutable.Map.empty[String, Todo]
+    private[this] val db: mutable.Map[UUID, Todo] = mutable.Map.empty[UUID, Todo]
 
-    def get(id: String): Option[Todo] = synchronized { db.get(id) }
+    def get(id: UUID): Option[Todo] = synchronized { db.get(id) }
     def list(): List[Todo] = synchronized { db.values.toList }
     def save(t: Todo): Unit = synchronized { db += (t.id -> t) }
-    def delete(id: String): Unit = synchronized { db -= id }
+    def delete(id: UUID): Unit = synchronized { db -= id }
   }
 
   val todos: Counter = statsReceiver.counter("todos")
 
   val postedTodo: RequestReader[Todo] =
-    body.as[String => Todo].map(_(UUID.randomUUID().toString))
+    body.as[UUID => Todo].map(_(UUID.randomUUID()))
 
   val getTodos: Endpoint[List[Todo]] = get("todos") {
     Ok(Todo.list())
@@ -48,8 +48,8 @@ object Todo extends TwitterServer {
     Created(t)
   }
 
-  case class TodoNotFound(id: String) extends Exception(s"Todo($id) not found.")
-  val deleteTodo: Endpoint[Todo] = delete("todos" / string) { id: String =>
+  case class TodoNotFound(id: UUID) extends Exception(s"Todo(${id.toString}) not found.")
+  val deleteTodo: Endpoint[Todo] = delete("todos" / uuid) { id: UUID =>
     Todo.get(id) match {
       case Some(t) => Todo.delete(id); Ok(t)
       case None => throw new TodoNotFound(id)
@@ -66,7 +66,7 @@ object Todo extends TwitterServer {
   val patchedTodo: RequestReader[Todo => Todo] = body.as[Todo => Todo]
 
   val patchTodo: Endpoint[Todo] =
-    patch("todos" / string ? patchedTodo) { (id: String, pt: Todo => Todo) =>
+    patch("todos" / uuid ? patchedTodo) { (id: UUID, pt: Todo => Todo) =>
       Todo.get(id) match {
         case Some(currentTodo) =>
           val newTodo: Todo = pt(currentTodo)
@@ -78,16 +78,11 @@ object Todo extends TwitterServer {
       }
     }
 
-  val handleExceptions: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
-    def apply(req: Request, service: Service[Request, Response]): Future[Response] =
-      service(req).handle {
-        case TodoNotFound(id) => io.finch.response.NotFound(Map("id" -> id))
-      }
-  }
-
-  val api: Service[Request, Response] = handleExceptions andThen (
+  val api: Service[Request, Response] = (
     getTodos :+: postTodo :+: deleteTodo :+: deleteTodos :+: patchTodo
-  ).toService
+  ).handle({
+    case TodoNotFound(id) => NotFound("err" -> "todo_not_found", "id" -> id.toString)
+  }).toService
 
   def main(): Unit = {
     val server: ListeningServer = Httpx.server
