@@ -1,6 +1,6 @@
 package i.f.workshop.finch
 
-import com.twitter.finagle.Httpx
+import com.twitter.finagle.Http
 import com.twitter.util.Await
 
 import io.finch._
@@ -21,5 +21,5 @@ object Time extends App {
       Ok(Time(l, currentTime(new java.util.Locale(l.language, l.country))))
     }
 
-  Await.ready(Httpx.server.serve(":8081", time.toService))
+  Await.ready(Http.server.serve(":8081", time.toService))
 }

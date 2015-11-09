@@ -1,10 +1,12 @@
 package i.f.workshop.finch
 
-import com.twitter.finagle.Httpx
+import com.twitter.finagle.Http
 import com.twitter.util.Await
 
 import io.finch._
 import io.finch.request._
+import io.finch.circe._
+import io.circe.generic.auto._
 
 object Greetings extends App {
 
@@ -29,5 +31,5 @@ object Greetings extends App {
       Ok(s"Salute, ${w.title}${w.name}!")
     }
 
-  Await.ready(Httpx.serve(":8081", (hi :+: hello :+: salute).toService))
+  Await.ready(Http.serve(":8081", (hi :+: hello :+: salute).toService))
 }

@@ -7,8 +7,8 @@ import com.twitter.finagle.param.Stats
 import com.twitter.finagle.stats.Counter
 
 import scala.collection.mutable
-import com.twitter.finagle.{Httpx, ListeningServer, Service, SimpleFilter}
-import com.twitter.finagle.httpx.{Request, Response}
+import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
+import com.twitter.finagle.http.{Request, Response}
 import com.twitter.server.TwitterServer
 import com.twitter.util.{Future, Await}
 
@@ -85,7 +85,7 @@ object Todo extends TwitterServer {
   }).toService
 
   def main(): Unit = {
-    val server: ListeningServer = Httpx.server
+    val server: ListeningServer = Http.server
       .configured(Stats(statsReceiver))
       .serve(s":${port()}", api)
 

@@ -1,7 +1,7 @@
 package i.f.workshop.finagle
 
-import com.twitter.finagle.httpx.{Request, Response}
-import com.twitter.finagle.{ListeningServer, Httpx, Service}
+import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.{ListeningServer, Http, Service}
 import com.twitter.io.Buf
 import com.twitter.util.{Await, Future}
 
@@ -16,6 +16,6 @@ object HelloWorld extends App {
     }
   }
 
-  val server: ListeningServer = Httpx.server.serve(":8081", service)
+  val server: ListeningServer = Http.server.serve(":8081", service)
   Await.ready(server)
 }
