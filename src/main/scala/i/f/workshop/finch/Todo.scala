@@ -17,11 +17,22 @@ import io.finch.request._
 import io.finch.circe._
 import io.circe.generic.auto._
 
+import io.circe._
+
 object Todo extends TwitterServer {
 
   val port: Flag[Int] = flag("port", 8081, "TCP port for HTTP server")
 
   case class Todo(id: UUID, title: String, completed: Boolean, order: Int)
+  case class TodoNotFound(id: UUID) extends Exception {
+    override def getMessage: String = s"Todo(${id.toString}) not found."
+  }
+
+  implicit val encodeException: Encoder[Exception] = Encoder.instance(e =>
+    Json.obj(
+      "message" -> Json.string(e.getMessage)
+    )
+  )
 
   object Todo {
     private[this] val db: mutable.Map[UUID, Todo] = mutable.Map.empty[UUID, Todo]
@@ -48,7 +59,6 @@ object Todo extends TwitterServer {
     Created(t)
   }
 
-  case class TodoNotFound(id: UUID) extends Exception(s"Todo(${id.toString}) not found.")
   val deleteTodo: Endpoint[Todo] = delete("todos" / uuid) { id: UUID =>
     Todo.get(id) match {
       case Some(t) => Todo.delete(id); Ok(t)
@@ -81,7 +91,7 @@ object Todo extends TwitterServer {
   val api: Service[Request, Response] = (
     getTodos :+: postTodo :+: deleteTodo :+: deleteTodos :+: patchTodo
   ).handle({
-    case TodoNotFound(id) => NotFound("err" -> "todo_not_found", "id" -> id.toString)
+    case e: TodoNotFound => NotFound(e)
   }).toService
 
   def main(): Unit = {
