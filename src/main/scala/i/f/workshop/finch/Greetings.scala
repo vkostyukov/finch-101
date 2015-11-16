@@ -4,7 +4,6 @@ import com.twitter.finagle.Http
 import com.twitter.util.Await
 
 import io.finch._
-import io.finch.request._
 import io.finch.circe._
 import io.circe.generic.auto._
 

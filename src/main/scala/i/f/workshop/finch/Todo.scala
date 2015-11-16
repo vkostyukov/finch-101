@@ -13,7 +13,6 @@ import com.twitter.server.TwitterServer
 import com.twitter.util.{Future, Await}
 
 import io.finch._
-import io.finch.request._
 import io.finch.circe._
 import io.circe.generic.auto._
 
