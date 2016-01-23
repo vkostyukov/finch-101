@@ -7,8 +7,8 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 resolvers += "TM" at "http://maven.twttr.com"
 
 libraryDependencies ++= Seq(
-  "com.github.finagle" %% "finch-core" % "0.9.2-SNAPSHOT" changing(),
-  "com.github.finagle" %% "finch-circe" % "0.9.2-SNAPSHOT" changing(),
+  "com.github.finagle" %% "finch-core" % "0.9.2" changing(),
+  "com.github.finagle" %% "finch-circe" % "0.9.2" changing(),
   "io.circe" %% "circe-generic" % "0.3.0-SNAPSHOT" changing(),
   "com.twitter" %% "twitter-server" % "1.15.0",
   "com.twitter" %% "finagle-stats" % "6.30.0"
