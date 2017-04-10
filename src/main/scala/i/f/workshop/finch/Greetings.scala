@@ -16,7 +16,7 @@ object Greetings extends App {
     }
 
   // GET /hello/:name?title=Mr.
-  val title: RequestReader[String] = paramOption("title").withDefault("")
+  val title: Endpoint[String] = paramOption("title").withDefault("")
   val hello: Endpoint[String] =
     get("hello" / string ? title) { (name: String, title: String) =>
       Ok(s"Hello, $title$name!")
@@ -24,7 +24,7 @@ object Greetings extends App {
 
   // GET /salute?name=Bob&title=Mr.
   case class Who(name: String, title: String)
-  val who: RequestReader[Who] = (param("name") :: title).as[Who]
+  val who: Endpoint[Who] = (param("name") :: title).as[Who]
   val salute: Endpoint[String] =
     get("salute" ? who) { w: Who =>
       Ok(s"Salute, ${w.title}${w.name}!")

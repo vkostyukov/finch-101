@@ -44,7 +44,7 @@ object Todo extends TwitterServer {
 
   val todos: Counter = statsReceiver.counter("todos")
 
-  val postedTodo: RequestReader[Todo] =
+  val postedTodo: Endpoint[Todo] =
     body.as[UUID => Todo].map(_(UUID.randomUUID()))
 
   val getTodos: Endpoint[List[Todo]] = get("todos") {
@@ -72,7 +72,7 @@ object Todo extends TwitterServer {
     Ok(all)
   }
 
-  val patchedTodo: RequestReader[Todo => Todo] = body.as[Todo => Todo]
+  val patchedTodo: Endpoint[Todo => Todo] = body.as[Todo => Todo]
 
   val patchTodo: Endpoint[Todo] =
     patch("todos" / uuid ? patchedTodo) { (id: UUID, pt: Todo => Todo) =>
